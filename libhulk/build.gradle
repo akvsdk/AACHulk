@@ -3,6 +3,9 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
 
+apply plugin: 'com.github.dcendents.android-maven'
+group='com.github.madreain'
+
 android {
     compileSdkVersion rootProject.ext.android["compileSdkVersion"]
     defaultConfig {
@@ -33,6 +36,10 @@ android {
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    packagingOptions {
+        exclude 'META-INF/proguard/coroutines.pro'
     }
 
 }
@@ -78,7 +85,9 @@ dependencies {
     //topsnackbar
     api rootProject.ext.dependencies["topsnackbar"]
     //eventbus
-    api rootProject.ext.dependencies["eventbus"]
+//    api rootProject.ext.dependencies["eventbus"]
+    //LiveEventBus
+    api rootProject.ext.dependencies["LiveEventBus"]
 
 }
 

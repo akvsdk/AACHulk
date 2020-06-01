@@ -8,7 +8,7 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.6.1'
+        classpath 'com.android.tools.build:gradle:3.2.1'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath "org.jetbrains.kotlin:kotlin-android-extensions:$kotlin_version"
 //        classpath "org.jetbrains.kotlin:kotlin-noarg:$kotlin_version"
@@ -24,13 +24,13 @@ buildscript {
 
 allprojects {
     repositories {
+        google()
+        jcenter()
+        mavenCentral()
         maven { url "https://jitpack.io" }
         maven { url 'https://maven.google.com' }
         maven { url "https://maven.aliyun.com/repository/google" }
         maven { url "https://maven.aliyun.com/repository/jcenter" }
-        google()
-        jcenter()
-
     }
 }
 

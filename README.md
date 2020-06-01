@@ -10,7 +10,7 @@ AACHulk
 
 ## 功能介绍
 
-1.支持多服务器地址、多成功码、各种超时时间、各种拦截器、Arouter、EventBus等的配置
+1.支持多服务器地址、多成功码、各种超时时间、各种拦截器、Arouter等的配置
 
 2.支持自定义各种非正常态View替换
 
@@ -28,8 +28,7 @@ AACHulk
 2. [`Retrofit` 为Android和Java提供安全的HTTP客户端](https://github.com/square/retrofit)
 3. [`BaseRecyclerViewAdapterHelper` 功能强大、灵活的万能适配器](https://github.com/CymChad/BaseRecyclerViewAdapterHelper)
 4. [`SmartRefreshLayout` Android智能下拉刷新框架](https://github.com/scwang90/SmartRefreshLayout)
-5. [`EventBus` Android和Java的事件总线，简化了活动、片段、线程、服务等之间的通信。代码越少，质量越好](https://github.com/greenrobot/EventBus)
-6. [`ARouter` 帮助 Android App 进行组件化改造的路由框架](https://github.com/alibaba/ARouter)
+5. [`ARouter` 帮助 Android App 进行组件化改造的路由框架](https://github.com/alibaba/ARouter)
 
 ## 基础功能
 
@@ -58,15 +57,15 @@ allprojects {
 在主项目app的build.grade加入
 
 ```
-api 'com.madreain:libhulk:1.0.0'
+api 'com.madreain:libhulk:1.0.4'
 ```
 
 3.继承HulkApplication，配置相关配置项
 
 ```
-HulkConfig.builder() //这里只需要选择设置一个
-            .setRetSuccess(BuildConfig.CODE_SUCCESS)//单一的成功响应码
-            .setRetSuccessList(BuildConfig.CODELIST_SUCCESS)////多种请求对应不同成功响应码
+    HulkConfig.builder() //这里只需要选择设置一个
+//            .setRetSuccess(BuildConfig.CODE_SUCCESS)
+            .setRetSuccessList(BuildConfig.CODELIST_SUCCESS)
             //设置多baseurl的retcode
             .addRetSuccess(HulkKey.WANANDROID_DOMAIN_NAME, BuildConfig.WANANDROID_CODELIST_SUCCESS)
             .addRetSuccess(HulkKey.GANK_DOMAIN_NAME, BuildConfig.GANK_CODELIST_SUCCESS)
@@ -74,22 +73,21 @@ HulkConfig.builder() //这里只需要选择设置一个
             //设置多baseurl
             .addDomain(HulkKey.WANANDROID_DOMAIN_NAME, HulkKey.WANANDROID_API)
             .addDomain(HulkKey.GANK_DOMAIN_NAME, HulkKey.GANK_API)
-            .setLogOpen(BuildConfig.OPEN_LOG)//网络日志开关
-            .setArouterOpen(BuildConfig.OPEN_AROUTER)//Arouter的开关
-            .setEventBusOpen(BuildConfig.OPEN_EVENTBUS)//EventBus的开关
+            .setLogOpen(BuildConfig.OPEN_LOG)
+            .setArouterOpen(BuildConfig.OPEN_AROUTER)
             .addOkHttpInterceptor(RequestHeaderInterceptor()) //请求头拦截器
             .addOkHttpInterceptor(
                 BuildConfig.OPEN_LOG,
                 HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY)
-            ) //okhttp请求日志开关+消息拦截器
+            ) //okhttp请求日志开关+消息拦截器.md
             .addRetCodeInterceptors(SessionInterceptor()) // returnCode非正常态拦截器
             .setRetrofit(
-                ApiClient.instance!!.getRetrofit(
-                    ApiClient.instance!!.getOkHttpClient(
+                ApiClient.getInstance().getRetrofit(
+                    ApiClient.getInstance().getOkHttpClient(
                         HulkConfig.getOkHttpInterceptors()
                     )
                 )
-            )//
+            )
             .build()
 ```
 上面这些配置项的配置可参考demo进行自身项目的配置
@@ -492,5 +490,42 @@ class SessionInterceptor : IReturnCodeErrorInterceptor {
 
 [多BaseUrl的设计思路参考的RetrofitUrlManager的实现方式](https://github.com/JessYanCoding/RetrofitUrlManager)
 
+4.消息总线
+
+针对大家提出的问题，这里采用了LiveEventBus(缺点:不支持线程分发)去替换原先的EventBus，去掉了在HulkConfig设置setEventBusOpen的开关设置，大家可根据自身项目去选择适合自己的消息总线
+
+[`LiveEventBus` 消息总线，基于LiveData，具有生命周期感知能力，支持Sticky，支持AndroidX，支持跨进程，支持跨APP](https://github.com/JeremyLiao/LiveEventBus)
+
+具体实现方法参考官方文档
+
+## 相关资料
+
 🌟🌟🌟
 推荐Carson_Ho大佬的[Kotlin：这是一份全面 & 详细的 类使用 的语法学习指南](https://blog.csdn.net/carson_ho/article/details/105356518)
+
+## 感谢
+
+感谢本框架所使用到的所有三方库的作者，以及所有为开源做无私贡献的开发者和组织，使我们能更好的工作和学习,本人也会将业余时间回报给开源社区
+
+## 关于我
+
+* **Email**: <madreain6@gmail.com>
+* **掘金**: <https://juejin.im/user/57ff05970e3dd90057e3e208>
+
+## License
+
+```
+   Copyright [2020] [madreain]
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+```

@@ -37,7 +37,6 @@ class AACHulkApplication : HulkApplication() {
             .addDomain(HulkKey.GANK_DOMAIN_NAME, HulkKey.GANK_API)
             .setLogOpen(BuildConfig.OPEN_LOG)
             .setArouterOpen(BuildConfig.OPEN_AROUTER)
-            .setEventBusOpen(BuildConfig.OPEN_EVENTBUS)
             .addOkHttpInterceptor(RequestHeaderInterceptor()) //请求头拦截器
             .addOkHttpInterceptor(
                 BuildConfig.OPEN_LOG,
@@ -45,8 +44,8 @@ class AACHulkApplication : HulkApplication() {
             ) //okhttp请求日志开关+消息拦截器.md
             .addRetCodeInterceptors(SessionInterceptor()) // returnCode非正常态拦截器
             .setRetrofit(
-                ApiClient.instance!!.getRetrofit(
-                    ApiClient.instance!!.getOkHttpClient(
+                ApiClient.getInstance().getRetrofit(
+                    ApiClient.getInstance().getOkHttpClient(
                         HulkConfig.getOkHttpInterceptors()
                     )
                 )

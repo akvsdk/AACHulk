@@ -25,7 +25,6 @@ import com.madreain.hulk.R
 import com.madreain.libhulk.config.HulkConfig
 import com.madreain.libhulk.mvvm.BaseListViewModel
 import com.madreain.libhulk.mvvm.IListView
-import com.madreain.libhulk.utils.EventBusUtils
 import com.madreain.libhulk.utils.ListUtils
 import com.madreain.libhulk.utils.ToastUtils
 import com.madreain.libhulk.view.IVaryViewHelperController
@@ -108,9 +107,6 @@ abstract class BaseListFragment<VM : BaseListViewModel<*>, DB : ViewDataBinding,
         if (HulkConfig.isArouterOpen()) {
             ARouter.getInstance().inject(this)
         }
-        if (HulkConfig.isEventBusOpen()) {
-            EventBusUtils.register(this)
-        }
         createViewModel()
         viewController = initVaryViewHelperController()
         lifecycle.addObserver(mViewModel)
@@ -151,8 +147,10 @@ abstract class BaseListFragment<VM : BaseListViewModel<*>, DB : ViewDataBinding,
      */
     private fun registerViewChange() {
         mViewModel.viewChange.showLoading.observe(this, Observer {
-            if (!viewController?.isHasRestore!!) {
-                showLoading()
+            viewController?.let {
+                if (!it.isHasRestore) {
+                    showLoading()
+                }
             }
         })
         mViewModel.viewChange.showDialogProgress.observe(this, Observer {
@@ -197,17 +195,19 @@ abstract class BaseListFragment<VM : BaseListViewModel<*>, DB : ViewDataBinding,
      */
 
     override fun showTips(msg: String) {
-        val snackBar = TSnackbar.make(
-            activity!!.findViewById(android.R.id.content),
-            msg,
-            TSnackbar.LENGTH_SHORT
-        )
-        val snackBarView = snackBar.view
-        snackBarView.setBackgroundColor(resources.getColor(R.color.mCCE4FF))
-        val textView =
-            snackBarView.findViewById<TextView>(com.androidadvance.topsnackbar.R.id.snackbar_text)
-        textView.setTextColor(resources.getColor(R.color.m177AE6))
-        snackBar.show()
+        activity?.let {
+            val snackBar = TSnackbar.make(
+                it.findViewById(android.R.id.content),
+                msg,
+                TSnackbar.LENGTH_SHORT
+            )
+            val snackBarView = snackBar.view
+            snackBarView.setBackgroundColor(resources.getColor(R.color.mCCE4FF))
+            val textView =
+                snackBarView.findViewById<TextView>(com.androidadvance.topsnackbar.R.id.snackbar_text)
+            textView.setTextColor(resources.getColor(R.color.m177AE6))
+            snackBar.show()
+        }
     }
 
     /**
@@ -240,7 +240,9 @@ abstract class BaseListFragment<VM : BaseListViewModel<*>, DB : ViewDataBinding,
      * 消失
      */
     override fun dismissDialog() {
-        if (dialog != null && dialog?.isShowing!!) dialog?.dismiss()
+        dialog?.let {
+            if (it.isShowing) it.dismiss()
+        }
     }
 
     /**
@@ -278,7 +280,7 @@ abstract class BaseListFragment<VM : BaseListViewModel<*>, DB : ViewDataBinding,
                 getSmartRefreshLayout()?.isEnabled = true
             }
             getSmartRefreshLayout()?.finishRefresh()
-            adapter!!.data.clear()
+            adapter?.data?.clear()
             viewController?.showEmpty(content, clickListener)
         }
     }
@@ -305,7 +307,7 @@ abstract class BaseListFragment<VM : BaseListViewModel<*>, DB : ViewDataBinding,
                 getSmartRefreshLayout()?.isEnabled = true
             }
             getSmartRefreshLayout()?.finishRefresh()
-            adapter?.data!!.clear()
+            adapter?.data?.clear()
             viewController?.showNetworkError(msg, listener)
         }
     }
@@ -331,24 +333,26 @@ abstract class BaseListFragment<VM : BaseListViewModel<*>, DB : ViewDataBinding,
     }
 
     override val isHasRestore: Boolean
-        get() = viewController!!.isHasRestore
+        get() = viewController?.isHasRestore ?: false
 
     override fun showToast(msg: String) {
         ToastUtils.showShortToastSafe(hulkActivity, msg)
     }
 
     override fun showToast(msg: Int) {
-        ToastUtils.show(hulkActivity, msg)
+        hulkActivity?.let {
+            ToastUtils.show(it, msg)
+        }
     }
 
-    override val hulkActivity: Activity
-        get() = activity!!
+    override val hulkActivity: Activity?
+        get() = activity
 
-    override val hulkContext: Context
-        get() = context!!
+    override val hulkContext: Context?
+        get() = context
 
-    override val hulkAppContext: Context
-        get() = activity!!.applicationContext
+    override val hulkAppContext: Context?
+        get() = activity?.applicationContext
 
 
     /**
@@ -424,7 +428,9 @@ abstract class BaseListFragment<VM : BaseListViewModel<*>, DB : ViewDataBinding,
             adapter?.setNewData(datas as MutableList<T>)
         } else {
             getSmartRefreshLayout()?.finishLoadMore()
-            adapter?.addData(datas!!)
+            datas?.let {
+                adapter?.addData(it)
+            }
         }
     }
 
@@ -458,10 +464,6 @@ abstract class BaseListFragment<VM : BaseListViewModel<*>, DB : ViewDataBinding,
 
     override fun onDestroy() {
         super.onDestroy()
-        //event注销
-        if (HulkConfig.isEventBusOpen()) {
-            EventBusUtils.unRegister(this)
-        }
         //相关销毁，相关事件置空
         if (mBinding != null) {
             mBinding == null

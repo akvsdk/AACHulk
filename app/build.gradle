@@ -12,6 +12,15 @@ android {
         versionCode rootProject.ext.android["versionCode"]
         versionName rootProject.ext.android["versionName"]
 
+        android.applicationVariants.all {
+            variant ->
+                variant.outputs.all {
+                    // 此处指定生成的apk文件名
+                    def newName = "aachulk_" + variant.buildType.name + "_v" + rootProject.ext.android["versionName"] + "_" + rootProject.ext.android["versionCode"] + ".apk"
+                    outputFileName = newName
+                }
+        }
+
         //ARouter添加的
         kapt {
             arguments {
@@ -28,11 +37,19 @@ android {
         buildConfigField "boolean", "OPEN_LOG", getOpenLog()
         buildConfigField "boolean", "OPEN_CHANGE", getOpenChange()
         buildConfigField "boolean", "OPEN_AROUTER", getOpenARouter()
-        buildConfigField "boolean", "OPEN_EVENTBUS", getOpenEventBus()
     }
 
     dataBinding {
         enabled true
+    }
+
+    signingConfigs {
+        release {
+            keyAlias 'aachulk'
+            keyPassword 'aachulk'
+            storeFile file('jks/aachulk.jks')
+            storePassword 'aachulk'
+        }
     }
 
     buildTypes {
@@ -45,6 +62,11 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+
+    packagingOptions {
+        exclude 'META-INF/proguard/coroutines.pro'
+    }
+
 }
 
 //相关配置的获取方法及其处理
@@ -58,10 +80,6 @@ def getOpenChange() {
 
 def getOpenARouter() {
     return "${OPEN_AROUTER}"
-}
-
-def getOpenEventBus() {
-    return "${OPEN_EVENTBUS}"
 }
 
 def getBaseUrl() {
@@ -88,8 +106,8 @@ def getGankCodeListSuccess() {
 dependencies {
     api fileTree(dir: 'libs', include: ['*.jar'])
     //hulk引入
-    api project(':libhulk')
-//    api rootProject.ext.dependencies["aachulk"]
+//    api project(':libhulk')
+    api rootProject.ext.dependencies["aachulk"]
     //arouter
     api rootProject.ext.dependencies["arouter"]
     kapt rootProject.ext.dependencies["arouter-compiler"]

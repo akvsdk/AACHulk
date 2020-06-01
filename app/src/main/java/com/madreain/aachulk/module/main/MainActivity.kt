@@ -5,14 +5,15 @@ import android.view.View
 import androidx.databinding.ViewDataBinding
 import com.alibaba.android.arouter.facade.annotation.Route
 import com.alibaba.android.arouter.launcher.ARouter
+import com.jeremyliao.liveeventbus.LiveEventBus
 import com.madreain.aachulk.R
 import com.madreain.aachulk.consts.ARouterUri
 import com.madreain.aachulk.consts.HulkKey
+import com.madreain.aachulk.consts.LiveEventBusKey
 import com.madreain.aachulk.module.EventBus.EventBusData
 import com.madreain.aachulk.module.dialog.DialogFragment
 import com.madreain.aachulk.utils.ActionBarUtils
 import com.madreain.libhulk.base.BaseActivity
-import com.madreain.libhulk.utils.EventBusUtils
 import com.scwang.smartrefresh.layout.SmartRefreshLayout
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.toolbar.*
@@ -66,16 +67,13 @@ class MainActivity : BaseActivity<MainViewModel, ViewDataBinding>() {
             bundle.putString(HulkKey.CommonRemind, "不再提醒")
             bundle.putBoolean(HulkKey.CommonExternalArea, true)
             dialogFragment.setArguments(bundle)
-            dialogFragment.setOnLeftRightClickListener(object :
-                DialogFragment.onLeftRightClickListener {
-                override fun onLeftClick(isRemind: Boolean) {
+            dialogFragment.setOnLeftRightClickListener(
+                onLeftClick = { isRemind ->
                     showToast("点击了左边按钮，是否不再提醒" + isRemind)
-                }
-
-                override fun onRightClick(isRemind: Boolean) {
+                },
+                onRightClick = { isRemind ->
                     showToast("点击了右边按钮，是否不再提醒" + isRemind)
-                }
-            })
+                })
             dialogFragment.show(supportFragmentManager, DialogFragment::class.java.getName())
         }
         //无数据
@@ -105,9 +103,9 @@ class MainActivity : BaseActivity<MainViewModel, ViewDataBinding>() {
             //            startActivity(Intent(hulkActivity, EventBusActivity::class.java))
             ARouter.getInstance().build(ARouterUri.EventBusActivity).navigation()
             //传递参数
-            tv_event.postDelayed({
-                EventBusUtils.post(EventBusData("我是一个EventBus测试"))
-            }, 1000)
+            LiveEventBus
+                .get(LiveEventBusKey.AACKey)
+                .postDelay("我是一个EventBus测试",1000)
         }
         //多个baseurl
         tv_more.setOnClickListener {

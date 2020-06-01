@@ -24,7 +24,6 @@ import com.madreain.libhulk.config.HulkConfig
 import com.madreain.libhulk.mvvm.BaseListViewModel
 import com.madreain.libhulk.mvvm.IListView
 import com.madreain.libhulk.utils.ActivityUtils
-import com.madreain.libhulk.utils.EventBusUtils
 import com.madreain.libhulk.utils.ListUtils
 import com.madreain.libhulk.utils.ToastUtils
 import com.madreain.libhulk.view.IVaryViewHelperController
@@ -94,9 +93,6 @@ abstract class BaseListActivity<VM : BaseListViewModel<*>, DB : ViewDataBinding,
         if (HulkConfig.isArouterOpen()) {
             ARouter.getInstance().inject(this)
         }
-        if (HulkConfig.isEventBusOpen()) {
-            EventBusUtils.register(this)
-        }
         super.onCreate(savedInstanceState)
         initViewDataBinding()
         createViewModel()
@@ -157,8 +153,10 @@ abstract class BaseListActivity<VM : BaseListViewModel<*>, DB : ViewDataBinding,
      */
     private fun registerViewChange() {
         mViewModel.viewChange.showLoading.observe(this, Observer {
-            if (!viewController?.isHasRestore!!) {
-                showLoading()
+            viewController?.let {
+                if (!it.isHasRestore) {
+                    showLoading()
+                }
             }
         })
         mViewModel.viewChange.showDialogProgress.observe(this, Observer {
@@ -247,7 +245,9 @@ abstract class BaseListActivity<VM : BaseListViewModel<*>, DB : ViewDataBinding,
      * 消失
      */
     override fun dismissDialog() {
-        if (dialog != null && dialog!!.isShowing) dialog?.dismiss()
+        dialog?.let {
+            if (it.isShowing) it?.dismiss()
+        }
     }
 
     /**
@@ -285,7 +285,7 @@ abstract class BaseListActivity<VM : BaseListViewModel<*>, DB : ViewDataBinding,
                 getSmartRefreshLayout()?.isEnabled = true
             }
             getSmartRefreshLayout()?.finishRefresh()
-            adapter!!.data.clear()
+            adapter?.data?.clear()
             viewController?.showEmpty(content, clickListener)
         }
     }
@@ -312,7 +312,7 @@ abstract class BaseListActivity<VM : BaseListViewModel<*>, DB : ViewDataBinding,
                 getSmartRefreshLayout()?.isEnabled = true
             }
             getSmartRefreshLayout()?.finishRefresh()
-            adapter!!.data.clear()
+            adapter?.data?.clear()
             viewController?.showNetworkError(msg, listener)
         }
     }
@@ -338,7 +338,7 @@ abstract class BaseListActivity<VM : BaseListViewModel<*>, DB : ViewDataBinding,
     }
 
     override val isHasRestore: Boolean
-        get() = viewController?.isHasRestore!!
+        get() = viewController?.isHasRestore ?: false
 
     override fun showToast(msg: String) {
         ToastUtils.showShortToastSafe(hulkActivity, msg)
@@ -430,7 +430,9 @@ abstract class BaseListActivity<VM : BaseListViewModel<*>, DB : ViewDataBinding,
             adapter?.setNewData(datas as MutableList<T>)
         } else {
             getSmartRefreshLayout()?.finishLoadMore()
-            adapter?.addData(datas!!)
+            datas?.let {
+                adapter?.addData(it)
+            }
         }
     }
 
@@ -463,17 +465,12 @@ abstract class BaseListActivity<VM : BaseListViewModel<*>, DB : ViewDataBinding,
     }
 
 
-
     /**
      * 销毁
      */
     override fun onDestroy() {
         super.onDestroy()
         ActivityUtils.get()?.remove(this)
-        //event注销
-        if (HulkConfig.isEventBusOpen()){
-            EventBusUtils.unRegister(this)
-        }
         //相关销毁，相关事件置空
         if (mBinding != null) {
             mBinding == null
@@ -484,8 +481,8 @@ abstract class BaseListActivity<VM : BaseListViewModel<*>, DB : ViewDataBinding,
         if (dialog != null) {
             dialog == null
         }
-        if (adapter!=null){
-            adapter==null
+        if (adapter != null) {
+            adapter == null
         }
         if (getSmartRefreshLayout() != null) {
             getSmartRefreshLayout()?.setOnRefreshListener(null)
